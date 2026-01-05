@@ -42,22 +42,30 @@ const start = { x: W / 2, y: H * 0.75 };
 const maxReflect = 5;
 
 let angle = -Math.PI / 2;
-const bg = new Image();
 
-// 画像変更
+// 背景画像
+const bg = new Image();
+let hasImage = false; // ← 重要：画像読み込みフラグ
+
+// 画像選択
 document.getElementById("imageInput").addEventListener("change", e => {
   const file = e.target.files[0];
   if (!file) return;
+
   const reader = new FileReader();
-  reader.onload = () => bg.src = reader.result;
+  reader.onload = () => {
+    bg.src = reader.result;
+    hasImage = true;
+  };
   reader.readAsDataURL(file);
 });
 
+// 角度操作
 canvas.addEventListener("pointermove", e => {
-  const r = canvas.getBoundingClientRect();
+  const rect = canvas.getBoundingClientRect();
   angle = Math.atan2(
-    e.clientY - r.top - start.y,
-    e.clientX - r.left - start.x
+    e.clientY - rect.top - start.y,
+    e.clientX - rect.left - start.x
   );
   draw();
 });
@@ -83,4 +91,21 @@ function drawReflectLine() {
   ctx.moveTo(x, y);
 
   for (let i = 0; i < maxReflect; i++) {
-    const
+    const tx = dx > 0 ? (W - x) / dx : -x / dx;
+    const ty = dy > 0 ? (H - y) / dy : -y / dy;
+    const t = Math.min(tx, ty);
+
+    x += dx * t;
+    y += dy * t;
+    ctx.lineTo(x, y);
+
+    drawHex(x, y);
+
+    if (t === tx) dx *= -1;
+    if (t === ty) dy *= -1;
+  }
+
+  ctx.strokeStyle = "rgba(220,240,255,0.95)";
+  ctx.lineWidth = 3;
+  ctx.shadowCo
+
