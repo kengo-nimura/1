@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Monst Reflect Line</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    canvas {
+      background: #000;
+      border: 2px solid #444;
+      touch-action: none;
+    }
+    input {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+
+<input type="file" id="imageInput" accept="image/*">
+
+<canvas id="stage" width="360" height="640"></canvas>
+
+<script>
+const canvas = document.getElementById("stage");
+const ctx = canvas.getContext("2d");
+
+const W = canvas.width;
+const H = canvas.height;
+
+const start = { x: W / 2, y: H * 0.75 };
+const maxReflect = 5;
+
+let angle = -Math.PI / 2;
+const bg = new Image();
+
+// 画像変更
+document.getElementById("imageInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => bg.src = reader.result;
+  reader.readAsDataURL(file);
+});
+
+canvas.addEventListener("pointermove", e => {
+  const r = canvas.getBoundingClientRect();
+  angle = Math.atan2(
+    e.clientY - r.top - start.y,
+    e.clientX - r.left - start.x
+  );
+  draw();
+});
+
+function drawHex(x, y, r = 7) {
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const a = Math.PI / 3 * i;
+    ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
+  }
+  ctx.closePath();
+  ctx.strokeStyle = "#8fdfff";
+  ctx.stroke();
+}
+
+function drawReflectLine() {
+  let x = start.x;
+  let y = start.y;
+  let dx = Math.cos(angle);
+  let dy = Math.sin(angle);
+
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+
+  for (let i = 0; i < maxReflect; i++) {
+    const
